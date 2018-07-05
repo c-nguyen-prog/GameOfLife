@@ -1,0 +1,191 @@
+package model;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Observable;
+
+
+public class CellularAutomaton extends Observable implements Cloneable {
+	
+	private Cell[][] field; //Speicher für altes Feld
+	private Cell[][] cells;
+	
+	private boolean running;
+	private boolean pause;
+	private int x, y;
+	
+	public CellularAutomaton(int x, int y) {
+		cells = new Cell[y][x];
+		
+		for(int y = 0; y < cells.length; y++) {
+			for(int x = 0; x < cells[0].length; x++) {
+				
+				cells[y][x] = new Cell(0);
+			}
+		}
+		field = new Cell[y+2][x+2];
+		
+	}
+
+	public Cell[][] getCell() {
+		return this.cells;
+	}
+	
+	public boolean isRunning() {
+		return this.running;
+	}
+	
+	public void setRunning(boolean running) {
+		this.running = running;
+	}
+	
+	public boolean isPause() {
+		return this.pause;
+	}
+
+	public int getX() {
+		return this.x;
+	}
+	
+	public int getY() {
+		return this.y;
+	}
+
+	public void setCell(int debug, int x, int y) {
+		
+		cells[y][x].setDebug(debug);		
+	}
+	
+	public void run() {
+		CopyField();
+		
+		for (int y = 0; y < cells.length; y++) {
+			for (int x = 0; x < cells[0].length; x++) {
+				if (cells[y][x].getDebug() == 0) {
+					BirthRules(y, x);
+				} else {
+					DyingRules(y, x);
+				}
+			}
+		}
+		
+	}
+	
+	public void BirthRules(int x, int y) {
+		
+		this.x = x;
+		this.y = y;
+		int neighborCounter = 0;
+		int i = x+1;
+		int j = y+1;
+		
+				
+		i--;		//links
+		if(field[j][i].getDebug() == 1) neighborCounter++;
+
+		j--;		//oben
+		if(field[j][i].getDebug() == 1) neighborCounter++;
+		
+		i++;		//rechts
+		if(field[j][i].getDebug() == 1) neighborCounter++;
+		
+		i++;		//rechts
+		if(field[j][i].getDebug() == 1) neighborCounter++;
+
+		j++;		//unten
+		if(field[j][i].getDebug() == 1) neighborCounter++;
+
+		j++;		//unten
+		if(field[j][i].getDebug() == 1) neighborCounter++;
+
+		i--;		//links
+		if(field[j][i].getDebug() == 1) neighborCounter++;
+
+		i--;		//links
+		if(field[j][i].getDebug() == 1) neighborCounter++;
+		
+
+
+		if(neighborCounter >= 3) {
+			cells[y][x].setDebug(1);		//wenn 3 oder mehr lebende Zellen gefunden
+			setChanged();
+			notifyObserver();
+		}						//worden sind wird die Zelle neu belebt
+				
+		
+	}
+	
+	public void DyingRules(int x, int y) {
+
+		this.x = x;
+		this.y = y;
+		int neighborCounter = 0;
+		int i = x+1;
+		int j = y+1;
+		
+				
+		i--;		//links
+		if(field[j][i].getDebug() == 1) neighborCounter++;
+
+		j--;		//oben
+		if(field[j][i].getDebug() == 1) neighborCounter++;
+		
+		i++;		//rechts
+		if(field[j][i].getDebug() == 1) neighborCounter++;
+		
+		i++;		//rechts
+		if(field[j][i].getDebug() == 1) neighborCounter++;
+
+		j++;		//unten
+		if(field[j][i].getDebug() == 1) neighborCounter++;
+
+		j++;		//unten
+		if(field[j][i].getDebug() == 1) neighborCounter++;
+
+		i--;		//links
+		if(field[j][i].getDebug() == 1) neighborCounter++;
+
+		i--;		//links
+		if(field[j][i].getDebug() == 1) neighborCounter++;
+		
+
+
+		if(neighborCounter >= 4) {
+			cells[y][x].setDebug(0);		//wenn 4 oder mehr lebende Zellen gefunden
+			setChanged();				//worden sind wird die Zelle wegen
+			notifyObserver();			//überbevölkerung getötet
+		}
+		
+	}
+	
+	public void CopyField() {
+		for (int y = 0; y < cells.length; y++) {
+			for (int x = 0; x < cells[0].length; x++) {
+				field[y+1][x+1] = cells[y][x].clone();
+			}
+		}
+		
+		for(int y = 0; y < cells.length; y++) {							//erste spalte == letzer cellen spalte
+			field[y+1][0] = cells[y][cells[0].length-1].clone();
+		}
+		
+		for(int y = 0; y < cells.length; y++) {
+			field[y+1][field[0].length-1] = cells[y][0].clone();		//letzte spalte == erste cellen Spalte
+		}
+		
+		for(int x = 0; x < cells[0].length; x++) {
+			field[0][x+1] = cells[cells.length-1][x].clone();			//
+		}
+		
+		for(int x = 0; x < cells[0].length; x++) {
+			field[field.length-1][x] = cells[0][x].clone();				//
+		}
+		
+		field[0][0] = cells[cells.length-1][cells[0].length-1].clone();			//oben-links - unten-rechts
+		field[field.length-1][field[0].length-1] = cells[0][0].clone();			//unten-rechts - oben-links
+		field[0][field[0].length-1] = cells[cells.length-1][0].clone();			//oben-rechts - unten-links
+		field[field.length-1][0] = cells[0][cells[0].length-1].clone();			//unten-links - oben-rechts
+	}
+
+	
+	
+}
